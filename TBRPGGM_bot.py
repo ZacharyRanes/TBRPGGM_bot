@@ -49,8 +49,15 @@ def upload_reply_handler(message):
     key = message.chat.id
     if key in waiting:
         if message.reply_to_message.message_id == waiting[key]:
-            bot.reply_to(message, message.document.file_id)
+            waiting.pop(key, None)
+            reply = bot.reply_to(message, "Reading file...")
+            file_parser(reply.message_id, message.document.file_id)
 
+#
+def file_parser(message_id, file_id):
+    file_info = bot.get_file(file_id)
+    adventure_file = bot.download_file(file_info.file_path)
+    #adventure_file pass this object to the parser part of the project 
 
 
 bot.polling()
