@@ -6,6 +6,7 @@ import telebot
 from telebot import types
 import requests
 import TBRPG_parser as parser
+import copy
 
 #This loads a config file that holds the bots API key
 config = configparser.ConfigParser()
@@ -52,7 +53,7 @@ def upload_reply_handler(message):
             try:
                 file_info = bot.get_file(message.document.file_id)
                 adventure_file = bot.download_file(file_info.file_path)
-                name = message.document.file_name[:-5]
+                name = message.document.file_name
                 adventures[name] = parser.parseAGF(adventure_file)
                 bot.reply_to(message, "Done")
             except:
@@ -63,35 +64,38 @@ def upload_reply_handler(message):
 def command_new_adventure(message):
     markup = types.InlineKeyboardMarkup()
     for a in adventures:
+        title = adventures[a].adventureTitle()
         markup.row(types.InlineKeyboardButton(callback_data=a,\
-                                              text=a))
+                                              text=title))
     bot.reply_to(message, "Which adventure do you want to play?", \
                                               reply_markup=markup)
 
-#
+#Handles the callback data sent from the new_adventure command 
 @bot.callback_query_handler(func=lambda call: \
                 call.message.chat.id not in running_adventures and\
                 call.data in adventures)
 def callback_start_new_adventure(call):
     key = call.message.chat.id
-    bot.send_message(key, "Starting adventure "+ call.data)
-    running_adventures[call.message.chat.id] = adventures[call.data]
+    bot.edit_message_text("Which adventure do you want to play?\n"\
+                           "==> " + call.data, 
+                              message_id=call.message.message_id, 
+                              chat_id=key, 
+                              reply_markup=None)
+    running_adventures[key] = copy.deepcopy(adventures[call.data])
     run_adventure(key)
 
-#
+#Called with the key to the running_adventures dic to show current choices
 def run_adventure(key):
     text = running_adventures[key].state()
     choices = running_adventures[key].getChoices()
     markup = types.InlineKeyboardMarkup()
     i = 0
     for ch in choices:
-        markup.row(types.InlineKeyboardButton(callback_data=\
-                                                    "ch"+str(i),\
-                                                     text=ch))
-        i = i + 1
+        markup.row(types.InlineKeyboardButton(callback_data="ch"+str(i), text=ch))
+        i += 1
     bot.send_message(key, text, reply_markup=markup)
     
-#
+#Handles the call back that clicking an inline choice sends
 @bot.callback_query_handler(func=lambda call: \
                     call.message.chat.id in running_adventures and\
                     call.data[:2] == "ch")

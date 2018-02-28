@@ -8,6 +8,7 @@ misc_substs = [r'true',r'True']
 
 class adventureGame:
     def __init__(self):
+        self.title = None
         self.states  = {}    #save game-related states
         self.data    = None  #the description of the game
         self.pos     = None  #ptr to current place in game
@@ -15,6 +16,7 @@ class adventureGame:
         self.text    = ''    #current text after processing
 
     def start(self):
+        self.title = self.data['title']
         self.pos = self.data['start_state']
         start_node = self.data['states'][self.pos]
         self.pruneChoices(start_node)
@@ -96,6 +98,9 @@ class adventureGame:
         expr = re.sub(misc_substs[0], misc_substs[1], expr)
         return expr
 
+    def adventureTitle(self):
+        return self.title
+
 
 def parseAGF(s):
     #turn string s into AGF
@@ -104,16 +109,18 @@ def parseAGF(s):
     ag.start()
     return ag
 
-def serialize(ag):
-    #turn adventureGame object into string
-    return json.dumps(ag.data)
+#These fuctions are not needed for the bot 
 
-#load a .agf file
-def loadAGF(f):
-    with open(f) as fd:
-        ag = parseAGF(fd.read())
-    return ag
+# def serialize(ag):
+#     #turn adventureGame object into string
+#     return json.dumps(ag.data)
 
-def saveAGF(ag, fn):
-    with open(fn,'w') as fd:
-        fd.write(serialize(ag))
+# #load a .agf file
+# def loadAGF(f):
+#     with open(f) as fd:
+#         ag = parseAGF(fd.read())
+#     return ag
+
+# def saveAGF(ag, fn):
+#     with open(fn,'w') as fd:
+#         fd.write(serialize(ag))
