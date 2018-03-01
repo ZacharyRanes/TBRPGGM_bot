@@ -7,6 +7,7 @@ from telebot import types
 import requests
 import TBRPG_parser as parser
 import copy
+import os
 
 #This loads a config file that holds the bots API key
 config = configparser.ConfigParser()
@@ -19,7 +20,15 @@ bot = telebot.TeleBot(token)
 #Dictionaries 
 #key is a chat id holds an message id (message waiting to be replied to)
 waiting = {}
+
+#key is original file names holds adventure game objects
 adventures = {}
+#Loads adventure game files from long term storage on boot startup
+for filename in os.listdir('adventures/'):
+    filepath = 'adventures/'+filename
+    adventures[filename] = parser.loadAGF(filepath)
+
+#key is chat id hold edited adventure game objects
 running_adventures = {}
 
 #Help command will display the instruction file to the chat 
@@ -55,6 +64,7 @@ def upload_reply_handler(message):
                 adventure_file = bot.download_file(file_info.file_path)
                 name = message.document.file_name
                 adventures[name] = parser.parseAGF(adventure_file)
+                parser.saveAGF(adventures[name], 'adventures/'+name)
                 bot.reply_to(message, "Done")
             except:
                 bot.reply_to(message, "Parsing Failed, please read /help for intustions on formating adventure files")
@@ -76,6 +86,7 @@ def command_new_adventure(message):
                 call.data in adventures)
 def callback_start_new_adventure(call):
     key = call.message.chat.id
+   # title = adventures[call.data].adventureTitle()
     bot.edit_message_text("Which adventure do you want to play?\n"\
                            "==> " + call.data, 
                               message_id=call.message.message_id, 
@@ -95,6 +106,13 @@ def run_adventure(key):
         i += 1
     bot.send_message(key, text, reply_markup=markup)
     
+    if running_adventures[key].isEnd():
+        if running_adventures[key].isWin():
+            bot.send_message(key, "BOT: Adventure completed")
+            del running_adventures[key]
+        else:
+            bot.send_message(key, "BOT: Adventure end")
+    
 #Handles the call back that clicking an inline choice sends
 @bot.callback_query_handler(func=lambda call: \
                     call.message.chat.id in running_adventures and\
@@ -104,7 +122,7 @@ def choice_handler(call):
     text = running_adventures[key].state()
     choices = running_adventures[key].getChoices()
     i = int(call.data[2:])
-    bot.edit_message_text(text + "\n==>" + choices[i], 
+    bot.edit_message_text(text + "\n==> " + choices[i], 
                               message_id=call.message.message_id, 
                               chat_id=key, 
                               reply_markup=None)

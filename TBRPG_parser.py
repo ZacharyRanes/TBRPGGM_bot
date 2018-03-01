@@ -102,25 +102,23 @@ class adventureGame:
         return self.title
 
 
+#turn string s into AGF 
 def parseAGF(s):
-    #turn string s into AGF
     ag = adventureGame()
     ag.data = json.loads(s)
     ag.start()
     return ag
 
-#These fuctions are not needed for the bot 
+#load a .agf file
+def loadAGF(f):
+    with open(f) as fd:
+        ag = parseAGF(fd.read())
+    return ag
 
-# def serialize(ag):
-#     #turn adventureGame object into string
-#     return json.dumps(ag.data)
+def saveAGF(ag, fn):
+    with open(fn,'w') as fd:
+        fd.write(serialize(ag))
 
-# #load a .agf file
-# def loadAGF(f):
-#     with open(f) as fd:
-#         ag = parseAGF(fd.read())
-#     return ag
-
-# def saveAGF(ag, fn):
-#     with open(fn,'w') as fd:
-#         fd.write(serialize(ag))
+def serialize(ag):
+   #turn adventureGame object into string
+   return json.dumps(ag.data)
