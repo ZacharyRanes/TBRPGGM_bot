@@ -8,7 +8,7 @@ misc_substs = [r'true',r'True']
 
 class adventureGame:
     def __init__(self):
-        self.title = None
+        self.title   = None
         self.states  = {}    #save game-related states
         self.data    = None  #the description of the game
         self.pos     = None  #ptr to current place in game
@@ -85,13 +85,13 @@ class adventureGame:
         try:
             exec(self.substPythonString(expr))
         except:
-            return False;
+            return False
 
     def evalStmt(self, expr):
         try:
             return eval(self.substPythonString(expr))
         except:
-            return 0;
+            return 0
 
     def substPythonString(self, expr):
         expr = re.sub(subst_vars[0], subst_vars[1], expr)
@@ -115,10 +115,11 @@ def loadAGF(f):
         ag = parseAGF(fd.read())
     return ag
 
+#Saves string to file
 def saveAGF(ag, fn):
     with open(fn,'w') as fd:
         fd.write(serialize(ag))
 
+#turn adventureGame object into string
 def serialize(ag):
-   #turn adventureGame object into string
    return json.dumps(ag.data)

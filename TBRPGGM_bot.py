@@ -1,33 +1,34 @@
 #Author: Zachary Ranes
 #Written in Python 3, requires eternnoir/pyTelegramBotAPI to run
 
-import configparser
-import telebot
+from configparser import ConfigParser
+from telebot import TeleBot
 from telebot import types
 import requests
 import TBRPG_parser as parser
 import copy
 import os
 
+
 #This loads a config file that holds the bots API key
-config = configparser.ConfigParser()
+config = ConfigParser()
 config.read("TBRPGGM_bot_bot_config.cfg")
-token = config.get("telegram_bot_api","telegram_token")
-
+TOKEN = config.get("telegram_bot_api","telegram_token")
 #The bot object is the go between the telegram API and the python code
-bot = telebot.TeleBot(token)
+bot = TeleBot(TOKEN)
 
-#Dictionaries 
+#Loads adventure game files from long term storage on boot startup
+def load_files():
+    dic = {}
+    for filename in os.listdir('adventures/'):
+        filepath = 'adventures/'+filename
+        dic[filename] = parser.loadAGF(filepath)
+    return dic
+
 #key is a chat id holds an message id (message waiting to be replied to)
 waiting = {}
-
 #key is original file names holds adventure game objects
-adventures = {}
-#Loads adventure game files from long term storage on boot startup
-for filename in os.listdir('adventures/'):
-    filepath = 'adventures/'+filename
-    adventures[filename] = parser.loadAGF(filepath)
-
+adventures = load_files()
 #key is chat id hold edited adventure game objects
 running_adventures = {}
 
@@ -47,7 +48,7 @@ def command_start(message):
 #Prompts for a reply of an adventure file and preps for upload_reply_handler
 @bot.message_handler(commands=['upload_adventure'])
 def command_upload_adventure(message):
-    reply = bot.reply_to(message, "Please replay to this message with an adventure file")
+    reply = bot.reply_to(message, "Please reply to this message with an adventure file")
     key = message.chat.id
     waiting[key] = reply.message_id
 
@@ -75,20 +76,20 @@ def command_new_adventure(message):
     markup = types.InlineKeyboardMarkup()
     for a in adventures:
         title = adventures[a].adventureTitle()
-        markup.row(types.InlineKeyboardButton(callback_data=a,\
+        markup.row(types.InlineKeyboardButton(callback_data=a,
                                               text=title))
     bot.reply_to(message, "Which adventure do you want to play?", \
                                               reply_markup=markup)
 
 #Handles the callback data sent from the new_adventure command 
-@bot.callback_query_handler(func=lambda call: \
+@bot.callback_query_handler(func=lambda call:
                 call.message.chat.id not in running_adventures and\
                 call.data in adventures)
 def callback_start_new_adventure(call):
     key = call.message.chat.id
-   # title = adventures[call.data].adventureTitle()
+    title = adventures[call.data].adventureTitle()
     bot.edit_message_text("Which adventure do you want to play?\n"\
-                           "==> " + call.data, 
+                           "==> " + title, 
                               message_id=call.message.message_id, 
                               chat_id=key, 
                               reply_markup=None)
@@ -129,5 +130,10 @@ def choice_handler(call):
     running_adventures[key].choose(i)
     run_adventure(key)
 
-
-bot.polling()
+if __name__ == '__main__':
+    while True:
+        #if a network error with Telegram polling will crash 
+        try:
+            bot.polling(none_stop=True)
+        except Exception as ex:
+            print(ex)
