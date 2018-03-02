@@ -5,16 +5,15 @@ from configparser import ConfigParser
 from telebot import TeleBot
 from telebot import types
 import requests
-import TBRPG_parser as parser
+import TBRPGGM_parser as parser
 import copy
 import os
 
 
 #This loads a config file that holds the bots API key
 config = ConfigParser()
-config.read("TBRPGGM_bot_bot_config.cfg")
+config.read("TBRPGGM_config.cfg")
 TOKEN = config.get("telegram_bot_api","telegram_token")
-#The bot object is the go between the telegram API and the python code
 bot = TeleBot(TOKEN)
 
 #Loads adventure game files from long term storage on boot startup
