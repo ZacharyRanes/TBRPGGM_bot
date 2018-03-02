@@ -7,5 +7,5 @@ Bot that helps GM text based RPGs
 * **Sergey Ivanov** - *Parser design* - [Nyarmith](https://github.com/Nyarmith)
 
 ## Dependencies:
-    * [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) 
-    * [lxml](http://lxml.de)
+* [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) 
+* [lxml](http://lxml.de)
