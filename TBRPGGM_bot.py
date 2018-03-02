@@ -16,7 +16,7 @@ config.read("TBRPGGM_config.cfg")
 TOKEN = config.get("telegram_bot_api","telegram_token")
 bot = TeleBot(TOKEN)
 
-#Loads adventure game files from long term storage on boot startup
+#Loads adventure game files from long term storage on bot startup
 def load_files():
     try:
         dic = {}
@@ -24,8 +24,8 @@ def load_files():
             filepath = 'adventures/'+filename
             dic[filename] = parser.loadAGF(filepath)
         return dic
-    except Exception as ex:
-        print(ex)
+    except:
+        os.makedirs('adventures/', exist_ok=True)
 
 #key is a chat id holds an message id (message waiting to be replied to)
 waiting = {}
@@ -58,17 +58,18 @@ def command_upload_adventure(message):
 @bot.message_handler(content_types=['document'])
 def upload_reply_handler(message):
     key = message.chat.id
-    if key in waiting:
+    if key in waiting and message.reply_to_message:
         if message.reply_to_message.message_id == waiting[key]:
             waiting.pop(key, None)
-            bot.reply_to(message, "Reading/Parsing File")
+            bot.reply_to(message, "Reading/Parsing File...")
             try:
                 file_info = bot.get_file(message.document.file_id)
                 adventure_file = bot.download_file(file_info.file_path)
                 name = message.document.file_name
+                name = name.lower() #when files are saved to long term mem they are saved as lower this prevents when they load to make duplicates in select adventure menu
                 adventures[name] = parser.parseAGF(adventure_file)
-                parser.saveAGF(adventures[name], 'adventures/'+name)
-                bot.reply_to(message, "Done")
+                parser.saveAGF(adventures[name], 'adventures/'+ name)
+                bot.reply_to(message, "Done!")
             except:
                 bot.reply_to(message, "Parsing Failed, please read /help for intustions on formating adventure files")
 
@@ -80,12 +81,12 @@ def command_new_adventure(message):
         title = adventures[a].adventureTitle()
         markup.row(types.InlineKeyboardButton(callback_data=a,
                                               text=title))
-    bot.reply_to(message, "Which adventure do you want to play?", \
+    bot.reply_to(message, "Which adventure do you want to play?", 
                                               reply_markup=markup)
 
 #Handles the callback data sent from the new_adventure command 
 @bot.callback_query_handler(func=lambda call:
-                call.message.chat.id not in running_adventures and\
+                call.message.chat.id not in running_adventures and
                 call.data in adventures)
 def callback_start_new_adventure(call):
     key = call.message.chat.id
@@ -111,10 +112,10 @@ def run_adventure(key):
     
     if running_adventures[key].isEnd():
         if running_adventures[key].isWin():
-            bot.send_message(key, "BOT: Adventure completed")
+            bot.send_message(key, "GM: Adventure completed")
             del running_adventures[key]
         else:
-            bot.send_message(key, "BOT: Adventure end")
+            bot.send_message(key, "GM: Adventure end...")
     
 #Handles the call back that clicking an inline choice sends
 @bot.callback_query_handler(func=lambda call: \
@@ -136,6 +137,6 @@ if __name__ == '__main__':
     while True:
         #if a network error with Telegram polling will crash 
         try:
-            bot.polling(none_stop=True)
-        except Exception as ex:
-            print(ex)
+            bot.polling()
+        except:
+            print("Polling Crashed")
