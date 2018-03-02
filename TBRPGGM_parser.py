@@ -1,6 +1,8 @@
+#Author: Sergey Ivanov
+
+from lxml import etree
 import json
 import re
-from lxml import etree
 
 #to use for parsing stuff
 subst_vars = [r'(\w+)::(\w+)',r'self.states["\1"]["\2"]']

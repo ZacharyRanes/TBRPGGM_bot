@@ -1,13 +1,13 @@
 #Author: Zachary Ranes
-#Written in Python 3, requires eternnoir/pyTelegramBotAPI to run
 
 from configparser import ConfigParser
 from telebot import TeleBot
 from telebot import types
 import requests
-import TBRPGGM_parser as parser
 import copy
 import os
+
+import TBRPGGM_parser as parser
 
 
 #This loads a config file that holds the bots API key
@@ -18,11 +18,14 @@ bot = TeleBot(TOKEN)
 
 #Loads adventure game files from long term storage on boot startup
 def load_files():
-    dic = {}
-    for filename in os.listdir('adventures/'):
-        filepath = 'adventures/'+filename
-        dic[filename] = parser.loadAGF(filepath)
-    return dic
+    try:
+        dic = {}
+        for filename in os.listdir('adventures/'):
+            filepath = 'adventures/'+filename
+            dic[filename] = parser.loadAGF(filepath)
+        return dic
+    except Exception as ex:
+        print(ex)
 
 #key is a chat id holds an message id (message waiting to be replied to)
 waiting = {}
