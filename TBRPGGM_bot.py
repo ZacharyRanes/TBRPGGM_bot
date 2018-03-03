@@ -26,6 +26,7 @@ def load_files():
         return dic
     except:
         os.makedirs('adventures/', exist_ok=True)
+        return {}
 
 #key is a chat id holds an message id (message waiting to be replied to)
 waiting = {}
@@ -134,9 +135,9 @@ def choice_handler(call):
     run_adventure(key)
 
 if __name__ == '__main__':
-    while True:
+   # while True:
         #if a network error with Telegram polling will crash 
         try:
-            bot.polling()
+            bot.polling(none_stop=True)
         except:
             print("Polling Crashed")
