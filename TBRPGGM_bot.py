@@ -135,7 +135,7 @@ def choice_handler(call):
     run_adventure(key)
 
 if __name__ == '__main__':
-   # while True:
+    while True:
         #if a network error with Telegram polling will crash 
         try:
             bot.polling(none_stop=True)
