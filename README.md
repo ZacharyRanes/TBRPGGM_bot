@@ -1,11 +1,8 @@
 # TBRPGGM_bot
 
-Bot that helps GM text based RPGs
-
-## Authors
-* **Zachary Ranes** - *Bot interface code* - [ZacharyRanes](https://github.com/ZacharyRanes)
-* **Sergey Ivanov** - *Parser design* - [Nyarmith](https://github.com/Nyarmith)
+Telegram interface for agf-parser 
 
 ## Dependencies:
+* python 3.6
 * [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) 
-* [lxml](http://lxml.de)
+* [agf-parser](https://github.com/Nyarmith/agf-parser)

@@ -1,18 +1,16 @@
 #Author: Zachary Ranes
 
-from configparser import ConfigParser
+import os
+import copy
+import requests
 from telebot import TeleBot
 from telebot import types
-import requests
-import copy
-import os
-
-import TBRPGGM_parser as parser
-
+from configparser import ConfigParser
+import agf-parser as parser
 
 #This loads a config file that holds the bots API key
 config = ConfigParser()
-config.read("TBRPGGM_config.cfg")
+config.read("TextAdventureGM_config.cfg")
 TOKEN = config.get("telegram_bot_api","telegram_token")
 bot = TeleBot(TOKEN)
 
@@ -38,7 +36,7 @@ running_adventures = {}
 #Help command will display the instruction file to the chat 
 @bot.message_handler(commands=['help'])
 def command_help(message):
-    with open("TBRPGGM_instructions.txt", "rb") as instructions:
+    with open("TextAdventure_instructions.txt", "rb") as instructions:
         bot.reply_to(message, instructions.read()) 
 
 #Gives the option to start playing a game or upload one
@@ -93,10 +91,10 @@ def callback_start_new_adventure(call):
     key = call.message.chat.id
     title = adventures[call.data].adventureTitle()
     bot.edit_message_text("Which adventure do you want to play?\n"\
-                           "==> " + title, 
-                              message_id=call.message.message_id, 
-                              chat_id=key, 
-                              reply_markup=None)
+                          "==> " + title, 
+                            message_id=call.message.message_id, 
+                            chat_id=key, 
+                            reply_markup=None)
     running_adventures[key] = copy.deepcopy(adventures[call.data])
     run_adventure(key)
 
@@ -105,33 +103,38 @@ def run_adventure(key):
     text = running_adventures[key].state()
     choices = running_adventures[key].getChoices()
     markup = types.InlineKeyboardMarkup()
-    i = 0
-    for ch in choices:
-        markup.row(types.InlineKeyboardButton(callback_data="ch"+str(i), text=ch))
-        i += 1
+    index = 0
+    for c in choices:
+        data = "choice" + str(index)
+        markup.row(types.InlineKeyboardButton(callback_data=data, 
+                                              text=c))
+        index += 1
     bot.send_message(key, text, reply_markup=markup)
-    
+
     if running_adventures[key].isEnd():
         if running_adventures[key].isWin():
             bot.send_message(key, "GM: Adventure completed")
             del running_adventures[key]
         else:
             bot.send_message(key, "GM: Adventure end...")
+            del running_adventures[key]
     
 #Handles the call back that clicking an inline choice sends
-@bot.callback_query_handler(func=lambda call: \
-                    call.message.chat.id in running_adventures and\
-                    call.data[:2] == "ch")
+@bot.callback_query_handler(func=lambda call: 
+                    call.message.chat.id in running_adventures and
+                    call.data[:6] == "choice")
 def choice_handler(call):
     key = call.message.chat.id
     text = running_adventures[key].state()
     choices = running_adventures[key].getChoices()
-    i = int(call.data[2:])
-    bot.edit_message_text(text + "\n==> " + choices[i], 
+    index = int(call.data[6:])
+    #edit the original message to show the choices made and hide buttons
+    bot.edit_message_text(text + "\n==> " + choices[index], 
                               message_id=call.message.message_id, 
                               chat_id=key, 
                               reply_markup=None)
-    running_adventures[key].choose(i)
+    #Make choice then show next states
+    running_adventures[key].choose(index)
     run_adventure(key)
 
 if __name__ == '__main__':
