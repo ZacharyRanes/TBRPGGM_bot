@@ -1,12 +1,13 @@
 #Author: Zachary Ranes
 
-import os
 import copy
-import requests
-from telebot import TeleBot
-from telebot import types
+import os
 from configparser import ConfigParser
-import agf-parser as parser
+
+import requests
+from telebot import TeleBot, types
+
+from agf_parser import agf_parser as parser
 
 #This loads a config file that holds the bots API key
 config = ConfigParser()
@@ -42,9 +43,9 @@ def command_help(message):
 #Gives the option to start playing a game or upload one
 @bot.message_handler(commands=['start'])
 def command_start(message):
-    bot.reply_to(message, "To start a /new_adventure use this command\n"\
+    bot.reply_to(message, "To /start_adventure use this command\n"\
                           "To /upload_adventure use this command\n"\
-                          "For /help with with adventure formatting use this command")
+                          "For /help with agf formatting use this command")
 
 #Prompts for a reply of an adventure file and preps for upload_reply_handler
 @bot.message_handler(commands=['upload_adventure'])
@@ -69,11 +70,12 @@ def upload_reply_handler(message):
                 adventures[name] = parser.parseAGF(adventure_file)
                 parser.saveAGF(adventures[name], 'adventures/'+ name)
                 bot.reply_to(message, "Done!")
-            except:
+            except Exception as ex:
+                print(ex)
                 bot.reply_to(message, "Parsing Failed, please read /help for intustions on formating adventure files")
 
 #Shows options of uploaded adventured  
-@bot.message_handler(commands=['new_adventure'])
+@bot.message_handler(commands=['start_adventure'])
 def command_new_adventure(message):
     markup = types.InlineKeyboardMarkup()
     for a in adventures:

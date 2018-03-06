@@ -1,4 +1,4 @@
-# TBRPGGM_bot
+# TextAdventureGM_bot
 
 Telegram interface for agf-parser 
 
