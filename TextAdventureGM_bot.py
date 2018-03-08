@@ -139,6 +139,36 @@ def choice_handler(call):
     running_adventures[key].choose(index)
     run_adventure(key)
 
+#
+@bot.message_handler(commands=['quit_adventure'])
+def command_quit_adventure(message):
+    if message.chat.id in running_adventures:
+        markup = types.InlineKeyboardMarkup()
+        markup.row(
+            types.InlineKeyboardButton(callback_data="TAGMQY", text="Yes"),
+            types.InlineKeyboardButton(callback_data="TAGMQN", text="No"))
+        bot.reply_to(message, 
+                    "Are you sure? All progress will be lost", 
+                    reply_markup=markup)
+    else:
+        bot.reply_to(message, "There is not a running adventure in this chat")
+
+#       
+@bot.callback_query_handler(func=lambda call: 
+                    call.message.chat.id in running_adventures and
+                    call.data[:5] == "TAGMQ")
+def quit_handler(call):
+    key = call.message.chat.id
+    if call.data[5:] == "Y":
+        text = "Adventure Quit"
+        del running_adventures[key]
+    else:
+        text = "Adventure Continues"
+    bot.edit_message_text(text, 
+                          message_id=call.message.message_id, 
+                          chat_id=key, 
+                          reply_markup=None)
+
 if __name__ == '__main__':
     while True:
         #if a network error with Telegram polling will crash 
