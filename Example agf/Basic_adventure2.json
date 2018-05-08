@@ -1,0 +1,37 @@
+{
+    "title":"Rooms and Doors",
+    "author":"Zach",
+    "gamevars" : {"inventory":{"key":false, "key2":false}, 
+                  "checks":{"room1":false, "room1d":false, "room2":false}},
+    "win_states" : ["escape"],
+    "start_state" : "room1",
+    "states" : {
+
+        "room1" : {"text":"You are in a dark room with a<cond expr='checks::room1d'> locked</cond> door", 
+            "options":[
+                ["inventory::key==true","","room2","Open the door"],
+                ["inventory::key!=true","checks::room1d=true","room1","Check the door"],
+                ["checks::room1!=true","checks::room1=true","room1","Look around"],
+                ["checks::room1==true and inventory::key!=true","inventory::key=true","room1","Pickup the key"],
+                ["","",{"room2":3,"room3":2},"Roll the dice"]
+            ]
+        },
+
+        "room2" : {"text":"Another dark room", 
+            "options":[
+                ["","","room1","Go back to the first room"],
+                ["inventory::key2==true","checks::room2=true","room2","Open chest"],
+                ["checks::room2!=true","checks::room2=true","room2","Look around"],
+                ["checks::room2==true and inventory::key2!=true","inventory::key2=true","room2","Pickup the key"]  
+            ]
+        },
+
+        "room3" : {"text":"how did i get here?",
+            "options":[
+                ["","","room1","fuck go back"]
+            ]
+        }
+
+        
+    }
+}

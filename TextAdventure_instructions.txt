@@ -1,1 +1,29 @@
-I have no help for you...
+Adventure files are formated like .json file but their extension does not really matter.
+The start of the file has some general info then...
+
+example file:
+
+{"title":"Adventure_title",
+    "author":"Authors_name",
+    "gamevars" : {"Namespace_name":{"Variable_name":Variable_state}, "etc":{"etc":true}},
+    "win_states" : ["State_name"],
+    "start_state" : "State_name",
+    "states" : {
+        "State_name" : {"text":"Displayed to player", 
+            "options" : [
+                ["variable state required to show option",
+                 "variable state to change when selecting option",
+                 "State_name to move to",
+                 "Text displayed for option"],
+                 
+                ["","","",""]    
+            ]
+        },
+        "State_name" : {"text":"Displayed to player", 
+            "options":[
+                ["","","",""],
+                ["","","",""]    
+            ]
+        }
+    }
+}

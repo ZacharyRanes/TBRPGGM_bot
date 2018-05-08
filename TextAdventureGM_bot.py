@@ -107,7 +107,8 @@ def run_adventure(key):
     markup = types.InlineKeyboardMarkup()
     index = 0
     for c in choices:
-        data = "choice" + str(index)
+        #Text Adventure GM Choice
+        data = "TAGMC" + str(index)
         markup.row(types.InlineKeyboardButton(callback_data=data, 
                                               text=c))
         index += 1
@@ -124,12 +125,12 @@ def run_adventure(key):
 #Handles the call back that clicking an inline choice sends
 @bot.callback_query_handler(func=lambda call: 
                     call.message.chat.id in running_adventures and
-                    call.data[:6] == "choice")
+                    call.data[:5] == "TAGMC")
 def choice_handler(call):
     key = call.message.chat.id
     text = running_adventures[key].state()
     choices = running_adventures[key].getChoices()
-    index = int(call.data[6:])
+    index = int(call.data[5:])
     #edit the original message to show the choices made and hide buttons
     bot.edit_message_text(text + "\n==> " + choices[index], 
                               message_id=call.message.message_id, 
@@ -170,9 +171,7 @@ def quit_handler(call):
                           reply_markup=None)
 
 if __name__ == '__main__':
-    while True:
-        #if a network error with Telegram polling will crash 
-        try:
-            bot.polling(none_stop=True)
-        except:
-            print("Polling Crashed")
+    try:
+        bot.polling(none_stop=True)
+    except:
+        print("Polling Crashed")
